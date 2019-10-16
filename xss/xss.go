@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// Query the X11 screen saver extension
+// Package xss queries the X screen saver extension for information about
+// screen saving and user input activity.
 package xss
 
 /*
@@ -35,7 +36,7 @@ import (
 	"unsafe"
 )
 
-// Enumerates types of screen-saving strategies.
+// Kind specifies one of three screen-saving strategies.
 type Kind int
 
 const (
@@ -61,18 +62,19 @@ func (k Kind) String() string {
 }
 
 type Info struct {
-	// Specifies whether the screen saver is enabled or disabled.
+	// Enabled specifies whether the screen saver is enabled (or disabled).
 	Enabled bool
-	// Specifies whether the screen saver is active or inactive.
+	// Active specifies whether the screen saver is active (or inactive).
 	Active bool
-	// Specifies which screen-saving strategy will be used when the
-	// screen saver activates.
+	// Kind specifies which screen-saving strategy will be used when
+	// the screen saver activates.
 	Kind Kind
-	// Time until the screen saver is activated.
+	// Countdown counts down the time until the screen saver activates.
 	Countdown time.Duration
-	// Time since the screen saver was activated.
+	// ActiveTime measures the time that the screen saver has been active.
+	// (It resets to zero when the screen saver becomes inactive.)
 	ActiveTime time.Duration
-	// Time since the most recent user input event.
+	// IdleTime measures the time since the last user input event.
 	IdleTime time.Duration
 }
 
@@ -82,7 +84,7 @@ type Client struct {
 	mutex sync.Mutex
 }
 
-// Creates a persistent connection to the XSS extension.
+// NewClient creates a persistent, thread-safe connection to the XSS extension.
 func NewClient() (*Client, error) {
 	disp := C.XOpenDisplay(nil)
 	if disp == nil {
@@ -106,7 +108,7 @@ func NewClient() (*Client, error) {
 	return cl, nil
 }
 
-// Queries the XSS extension.
+// Query queries the XSS extension.
 func (cl Client) Query() (i Info, err error) {
 	if cl.disp == nil {
 		panic("Client instances must be created with NewClient.")

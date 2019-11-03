@@ -6,8 +6,8 @@
 package main
 
 import (
-	"branen.github.io/go-xss-query/xss"
 	"fmt"
+	"github.com/branen/go-xss-query/xss"
 )
 
 func main() {
